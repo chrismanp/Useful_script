@@ -26,3 +26,7 @@ make -j
 read -p "Press any key"
 
 make check
+
+read -p "Press any key"
+
+make install
