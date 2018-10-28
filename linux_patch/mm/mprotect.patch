@@ -1,5 +1,5 @@
 --- linux-4.7.1.old/mm/mprotect.c	2016-08-16 02:35:15.000000000 -0500
-+++ linux-4.7.1/mm/mprotect.c	2018-10-27 01:24:07.266053417 -0500
++++ linux-4.7.1/mm/mprotect.c	2018-10-28 13:28:48.895938738 -0500
 @@ -1,4 +1,4 @@
 -/*
 + /*
@@ -44,7 +44,7 @@
  	unsigned long nr_huge_updates = 0;
  	unsigned long mni_start = 0;
  
-+        printk("%s %s %d addr : %lx\n", __FILE__, __func__, __LINE__, addr);
++        //printk("%s %s %d addr : %lx\n", __FILE__, __func__, __LINE__, addr);
 +
  	pmd = pmd_offset(pud, addr);
  	do {
@@ -53,31 +53,24 @@
  			}
  			/* fall through, the trans huge pmd just split */
  		}
--		this_pages = change_pte_range(vma, pmd, addr, next, newprot,
--				 dirty_accountable, prot_numa);
--		pages += this_pages;
 +
 +                /* chrisma */
-+		//this_pages = change_pte_range(vma, pmd, addr, next, newprot,
-+		//		 dirty_accountable, prot_numa);
-+		//pages += this_pages;
+ 		this_pages = change_pte_range(vma, pmd, addr, next, newprot,
+ 				 dirty_accountable, prot_numa);
+ 		pages += this_pages;
 +                /* chrisma */
 +
  	} while (pmd++, addr = next, addr != end);
  
  	if (mni_start)
-@@ -207,8 +219,9 @@
+@@ -207,6 +219,7 @@
  		next = pud_addr_end(addr, end);
  		if (pud_none_or_clear_bad(pud))
  			continue;
--		pages += change_pmd_range(vma, pud, addr, next, newprot,
--				 dirty_accountable, prot_numa);
 +		/* chrisma */
-+		//pages += change_pmd_range(vma, pud, addr, next, newprot,
-+		//		 dirty_accountable, prot_numa);
+ 		pages += change_pmd_range(vma, pud, addr, next, newprot,
+ 				 dirty_accountable, prot_numa);
  	} while (pud++, addr = next, addr != end);
- 
- 	return pages;
 @@ -223,7 +236,8 @@
  	unsigned long next;
  	unsigned long start = addr;
@@ -88,18 +81,16 @@
  	BUG_ON(addr >= end);
  	pgd = pgd_offset(mm, addr);
  	flush_cache_range(vma, addr, end);
-@@ -232,8 +246,9 @@
+@@ -232,7 +246,8 @@
  		next = pgd_addr_end(addr, end);
  		if (pgd_none_or_clear_bad(pgd))
  			continue;
 -		pages += change_pud_range(vma, pgd, addr, next, newprot,
--				 dirty_accountable, prot_numa);
 +		// chrisma
-+                //pages += change_pud_range(vma, pgd, addr, next, newprot,
-+		//		 dirty_accountable, prot_numa);
++                pages += change_pud_range(vma, pgd, addr, next, newprot,
+ 				 dirty_accountable, prot_numa);
  	} while (pgd++, addr = next, addr != end);
  
- 	/* Only flush the TLB if we actually modified any entries: */
 @@ -249,12 +264,16 @@
  		       int dirty_accountable, int prot_numa)
  {
@@ -118,7 +109,7 @@
 +	else {
 +	  //	        printk("%s %s %d\n", __FILE__, __func__, __LINE__);
 +	        // chrisma  
-+                //pages = change_protection_range(vma, start, end, newprot, dirty_accountable, prot_numa);
++                pages = change_protection_range(vma, start, end, newprot, dirty_accountable, prot_numa);
 +        }
  	return pages;
  }
@@ -127,7 +118,7 @@
  mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
  	unsigned long start, unsigned long end, unsigned long newflags)
  {
-+        printk("%s %s %d add : %lx\n", __FILE__, __func__, __LINE__, start);
++  //printk("%s %s %d add : %lx\n", __FILE__, __func__, __LINE__, start);
  	struct mm_struct *mm = vma->vm_mm;
  	unsigned long oldflags = vma->vm_flags;
  	long nrpages = (end - start) >> PAGE_SHIFT;
@@ -135,7 +126,7 @@
  	 * even if read-only so there is no need to account for them here
  	 */
  	if (newflags & VM_WRITE) {
-+	  printk("%s %s %d add : %lx newflags : %lx VM_WRITE : %lx VM_READ = %lx\n", __FILE__, __func__, __LINE__, start, newflags, VM_WRITE, VM_READ);
++	  //printk("%s %s %d add : %lx newflags : %lx VM_WRITE : %lx VM_READ = %lx\n", __FILE__, __func__, __LINE__, start, newflags, VM_WRITE, VM_READ);
  		/* Check space limits when area turns into data. */
  		if (!may_expand_vm(mm, newflags, nrpages) &&
  				may_expand_vm(mm, oldflags, nrpages))
@@ -145,10 +136,10 @@
  
 -	change_protection(vma, start, end, vma->vm_page_prot,
 -			  dirty_accountable, 0);
-+	printk("%s %s %d add : %lx newflags : %lx oldflags : %lx\n", __FILE__, __func__, __LINE__, start, newflags, oldflags);
++	//printk("%s %s %d add : %lx newflags : %lx oldflags : %lx\n", __FILE__, __func__, __LINE__, start, newflags, oldflags);
 +        // chrisma
-+        //change_protection(vma, start, end, vma->vm_page_prot,
-+	//			  dirty_accountable, 0);
++        change_protection(vma, start, end, vma->vm_page_prot,
++				  dirty_accountable, 0);
  
  	/*
  	 * Private VM_LOCKED VMA becoming writable: trigger COW to avoid major
